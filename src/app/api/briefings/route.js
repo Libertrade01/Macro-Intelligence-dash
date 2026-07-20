@@ -41,17 +41,15 @@ export async function POST(request) {
 
 export async function GET() {
   return NextResponse.json({
-    service: "briefing-studio",
+    service: "macro-intelligence-dash",
     ingest: "POST /api/briefings with Bearer token",
     macro_inputs: "GET /api/macro/inputs with Bearer token",
     types: [
-      "ai_briefing",
       "macro_briefing",
       "podcast_summary",
       "newsletter_summary",
     ],
     specs: {
-      ai_briefing: "AI-BRIEFING-SPEC.md",
       macro_briefing: "MACRO-BRIEFING-SPEC.md",
       podcast_summary: "PODCAST-SUMMARY-SPEC.md",
       newsletter_summary: "NEWSLETTER-SUMMARY-SPEC.md",

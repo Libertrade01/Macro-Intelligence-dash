@@ -6,7 +6,7 @@ import { listBriefingsByType } from "../../../lib/briefings";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Inputs — Macro Mind — Briefing Studio",
+  title: "Inputs — Macro Intelligence",
 };
 
 export default async function MacroInputsPage() {
@@ -17,7 +17,7 @@ export default async function MacroInputsPage() {
 
   return (
     <div className="studio-content inputs-page">
-      <p className="eyebrow">Macro Mind</p>
+      <p className="eyebrow">Macro Intelligence</p>
       <h1 className="page-title" style={{ marginBottom: 28 }}>
         Inputs
       </h1>
