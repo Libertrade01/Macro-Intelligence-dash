@@ -27,7 +27,7 @@ export default function AppShell({ children }) {
     <div className="studio-shell">
       <aside className="studio-sidebar">
         <div className="studio-wordmark">
-          <span>Macro Mind</span>
+          <span>Libertrade</span>
           Macro Intelligence
         </div>
 
