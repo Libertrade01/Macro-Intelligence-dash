@@ -7,12 +7,12 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#f1efe7",
+  themeColor: "#0a0d12",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body>
         <AppShell>{children}</AppShell>
       </body>

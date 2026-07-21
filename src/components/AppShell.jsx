@@ -24,12 +24,11 @@ function isNavActive(pathname, href) {
 
 export default function AppShell({ children }) {
   const pathname = usePathname();
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("signal-room-theme");
-    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    const nextTheme = saved || preferred;
+    const nextTheme = saved || "dark";
     document.documentElement.dataset.theme = nextTheme;
     setTheme(nextTheme);
   }, []);

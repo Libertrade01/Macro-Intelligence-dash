@@ -1,24 +1,40 @@
-/* Macro Signal Room — paper desk
-   Stance owns color (aligned / mixed / no view).
-   Cards share one quiet border language — no per-factor rainbow. */
+/* Macro Signal Room — cool monitoring desk
+   Section labels carry quiet accent color.
+   Stance owns the data marks (aligned / mixed / no view).
+   Driver cards share one border language — no per-factor rainbow. */
 
 .signal-room {
   --stance-aligned: var(--brand);
   --stance-aligned-ink: var(--brand-strong);
-  --stance-aligned-wash: color-mix(in srgb, var(--brand) 28%, var(--surface));
+  --stance-aligned-wash: color-mix(in srgb, var(--brand) 22%, var(--surface));
   --stance-mixed: var(--amber);
-  --stance-mixed-ink: color-mix(in srgb, var(--amber) 72%, var(--ink));
-  --stance-mixed-wash: color-mix(in srgb, var(--amber) 22%, var(--surface));
+  --stance-mixed-ink: color-mix(in srgb, var(--amber) 80%, var(--ink));
+  --stance-mixed-wash: color-mix(in srgb, var(--amber) 16%, var(--surface));
   --stance-none: var(--faint);
   --stance-none-ink: var(--muted);
   --stance-none-wash: var(--surface2);
+  --section-call: var(--brand-strong);
+  --section-delta: #f0b429;
+  --section-forward: #60a5fa;
+  --section-regime: #94a3b8;
+  --section-causal: #2dd4bf;
+  --section-align: #818cf8;
   --panel-rule: var(--border);
   max-width: 1680px;
   margin: 0 auto;
   overflow: hidden;
   color: var(--text);
   border-inline: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+html:not([data-theme='dark']) .signal-room {
+  --section-call: #0f766e;
+  --section-delta: #b45309;
+  --section-forward: #2563eb;
+  --section-regime: #475569;
+  --section-causal: #0d9488;
+  --section-align: #4f46e5;
 }
 
 .signal-room .signal-room__kicker {
@@ -29,6 +45,14 @@
   letter-spacing: .12em;
   text-transform: uppercase;
 }
+
+.signal-room__call .signal-room__kicker { color: var(--section-call); }
+.signal-room__revision .signal-room__kicker,
+.signal-room__revision .signal-room__change-item > span { color: var(--section-delta); }
+.signal-room__tests .signal-room__kicker { color: var(--section-forward); }
+.signal-room__regime .signal-room__kicker { color: var(--section-regime); }
+.signal-room__drivers .signal-room__kicker { color: var(--section-causal); }
+.signal-room__alignment .signal-room__kicker { color: var(--section-align); }
 
 .signal-room__panel-head {
   display: flex;
@@ -63,6 +87,16 @@
 .signal-room__call {
   display: flex;
   flex-direction: column;
+  box-shadow: inset 0 2px 0 var(--section-call);
+  background: var(--surface);
+}
+
+.signal-room__revision {
+  box-shadow: inset 0 2px 0 var(--section-delta);
+}
+
+.signal-room__tests {
+  box-shadow: inset 0 2px 0 var(--section-forward);
 }
 
 .signal-room__call h1 {
@@ -109,12 +143,7 @@
   flex-direction: column;
   gap: 18px;
   border-left: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 82%, var(--bg-deep));
-}
-
-.signal-room__revision .signal-room__kicker,
-.signal-room__revision .signal-room__change-item > span {
-  color: var(--muted);
+  background: var(--bg-deep);
 }
 
 .signal-room__change-item {
@@ -139,6 +168,7 @@
 
 .signal-room__tests {
   border-left: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .signal-room__tests ol { margin-top: 12px; list-style: none; }
@@ -156,8 +186,8 @@
   height: 32px;
   display: grid;
   place-items: center;
-  color: var(--ink);
-  border: 1px solid var(--border2);
+  color: var(--section-forward);
+  border: 1px solid color-mix(in srgb, var(--section-forward) 35%, var(--border));
   border-radius: 50%;
   font-family: var(--font-mono);
   font-size: 9px;
@@ -260,6 +290,7 @@
   color: var(--text);
   background: var(--bg-deep);
   border-bottom: 1px solid var(--border2);
+  box-shadow: inset 0 2px 0 var(--section-regime);
 }
 
 .signal-room__regime-title {
@@ -270,7 +301,7 @@
   padding-right: 26px;
 }
 
-.signal-room__regime-title .signal-room__kicker { color: var(--muted); }
+.signal-room__regime-title .signal-room__kicker { color: var(--section-regime); }
 .signal-room__regime-title > span {
   color: var(--faint);
   font-family: var(--font-mono);
@@ -313,6 +344,13 @@
 
 .signal-room__drivers {
   background: var(--bg);
+  box-shadow: inset 0 2px 0 var(--section-causal);
+}
+
+.signal-room__alignment {
+  border-top: 1px solid var(--border2);
+  background: var(--surface);
+  box-shadow: inset 0 2px 0 var(--section-align);
 }
 
 .signal-room__section-head {
@@ -385,7 +423,7 @@
   flex-direction: column;
   padding: 20px;
   border: 1px solid var(--panel-rule);
-  border-top: 2px solid var(--ink);
+  border-top: 2px solid var(--section-causal);
   background: var(--surface);
 }
 
@@ -493,11 +531,6 @@
   font-size: 13px;
   font-style: normal;
   text-align: center;
-}
-
-.signal-room__alignment {
-  border-top: 1px solid var(--border2);
-  background: var(--surface);
 }
 
 .signal-room__matrix-wrap { overflow-x: auto; }
