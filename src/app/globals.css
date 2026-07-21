@@ -383,7 +383,7 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
   padding-left: 0.65rem;
 }
 .signal-room__evidence a {
-  color: var(--accent);
+  color: var(--brand-strong);
   text-decoration: none;
 }
 .signal-room__revision-list {
@@ -396,8 +396,7 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 }
 .signal-room__revision-card {
   border: 1px solid var(--border);
-  border-radius: 1.25rem;
-  background: var(--panel);
+  background: var(--surface);
   padding: 1.1rem;
 }
 .signal-room__revision-card header {

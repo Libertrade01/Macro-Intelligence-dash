@@ -95,18 +95,37 @@ function V2NextTests({ tests }) {
   );
 }
 
+function normalizeToken(value, fallback = "flat") {
+  return String(value || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}
+
 function DirectionMark({ direction }) {
-  const value = direction || "flat";
-  return <span className={`signal-room__direction signal-room__direction--${value}`}>{value.replace("_", " ")}</span>;
+  const value = normalizeToken(direction, "flat");
+  return (
+    <span className={`signal-room__direction signal-room__direction--${value}`}>
+      {value.replace(/_/g, " ")}
+    </span>
+  );
 }
 
 function AlignmentMark({ value }) {
-  const normalized = value || "no_view";
-  const labels = { aligned: "Aligned", mixed: "Mixed", not_aligned: "Not aligned", no_view: "No view" };
-  const glyphs = { aligned: "+", mixed: "~", not_aligned: "x", no_view: "-" };
+  const normalized = normalizeToken(value, "no_view");
+  const labels = {
+    aligned: "Aligned",
+    mixed: "Mixed",
+    not_aligned: "Not aligned",
+    no_view: "No view",
+  };
+  const glyphs = { aligned: "+", mixed: "−", not_aligned: "×", no_view: "−" };
   return (
-    <span className={`signal-room__matrix-mark signal-room__matrix-mark--${normalized}`} aria-label={labels[normalized]}>
-      {glyphs[normalized]}
+    <span
+      className={`signal-room__matrix-mark signal-room__matrix-mark--${normalized}`}
+      aria-label={labels[normalized] || labels.no_view}
+    >
+      {glyphs[normalized] || glyphs.no_view}
     </span>
   );
 }
@@ -115,7 +134,10 @@ function V2DriverChain({ drivers }) {
   return (
     <section className="signal-room__drivers">
       <header className="signal-room__section-head">
-        <div><p className="signal-room__kicker">Causal picture</p><h2>What is driving the room view</h2></div>
+        <div>
+          <p className="signal-room__kicker">Causal picture</p>
+          <h2>What is driving the room view</h2>
+        </div>
         <p>Primary transmission / left to right</p>
       </header>
       <div className="signal-room__chain">
@@ -123,11 +145,15 @@ function V2DriverChain({ drivers }) {
           <div className="signal-room__chain-step" key={driver.id || driver.name}>
             <article>
               <header>
-                <span className="signal-room__driver-index">{String(index + 1).padStart(2, "0")}</span>
+                <span className="signal-room__driver-index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <DirectionMark direction={driver.direction} />
               </header>
               <h3>{driver.name}</h3>
-              <strong className="signal-room__driver-signal">{driver.signal || driver.state}</strong>
+              <strong className="signal-room__driver-signal">
+                {driver.signal || driver.state}
+              </strong>
               <p>{driver.summary}</p>
               {index < drivers.length - 1 ? (
                 <div className="signal-room__transmission">
@@ -137,7 +163,7 @@ function V2DriverChain({ drivers }) {
               ) : null}
               <EvidenceDisclosure evidence={driver.evidence} />
             </article>
-            {index < drivers.length - 1 ? <i aria-hidden="true">-&gt;</i> : null}
+            {index < drivers.length - 1 ? <i aria-hidden="true">&gt;</i> : null}
           </div>
         ))}
       </div>
@@ -149,31 +175,72 @@ function V2SourceMatrix({ sources, drivers }) {
   return (
     <section className="signal-room__alignment">
       <header className="signal-room__section-head">
-        <div><p className="signal-room__kicker">Source alignment</p><h2>Where the desks stand</h2></div>
-        <div className="signal-room__matrix-legend"><span>+ Aligned</span><span>~ Mixed</span><span>- No view</span></div>
+        <div>
+          <p className="signal-room__kicker">Source alignment</p>
+          <h2>Where the desks stand</h2>
+        </div>
+        <div className="signal-room__matrix-legend">
+          <span>
+            <i aria-hidden="true" />
+            Aligned
+          </span>
+          <span>
+            <i aria-hidden="true" />
+            Mixed
+          </span>
+          <span>
+            <i aria-hidden="true" />
+            No view
+          </span>
+        </div>
       </header>
       <div className="signal-room__matrix-wrap">
-        <div className="signal-room__matrix" style={{ "--driver-count": drivers.length }} role="table" aria-label="Source alignment by causal driver">
+        <div
+          className="signal-room__matrix"
+          style={{ "--driver-count": drivers.length }}
+          role="table"
+          aria-label="Source alignment by causal driver"
+        >
           <div className="signal-room__matrix-header" role="row">
             <span role="columnheader">Desk</span>
-            {drivers.map((driver) => <span role="columnheader" key={driver.id}>{driver.name}</span>)}
+            {drivers.map((driver) => (
+              <span role="columnheader" key={driver.id}>
+                {driver.name}
+              </span>
+            ))}
             <span role="columnheader">Trend</span>
             <span role="columnheader">Evidence</span>
           </div>
-          {sources.map((source) => (
-            <div className="signal-room__matrix-row" role="row" key={source.source}>
-              <div className="signal-room__matrix-source" role="rowheader"><strong>{source.source}</strong><span>{source.stance}</span></div>
-              {drivers.map((driver) => (
-                <div className="signal-room__matrix-cell" role="cell" key={driver.id}>
-                  <AlignmentMark value={source.positions?.[driver.id]} />
+          {sources.map((source) => {
+            const trend = normalizeToken(source.trend, "unchanged");
+            return (
+              <div className="signal-room__matrix-row" role="row" key={source.source}>
+                <div className="signal-room__matrix-source" role="rowheader">
+                  <strong>{source.source}</strong>
+                  <span>{source.stance}</span>
                 </div>
-              ))}
-              <div className="signal-room__matrix-trend" role="cell"><i aria-hidden="true" />{source.trend || "unchanged"}</div>
-              <div className="signal-room__matrix-link" role="cell">
-                {source.latest_slug ? <Link href={evidenceHref(source.latest_slug)}>Open +</Link> : "-"}
+                {drivers.map((driver) => (
+                  <div className="signal-room__matrix-cell" role="cell" key={driver.id}>
+                    <AlignmentMark value={source.positions?.[driver.id]} />
+                  </div>
+                ))}
+                <div
+                  className={`signal-room__matrix-trend signal-room__matrix-trend--${trend}`}
+                  role="cell"
+                >
+                  <i aria-hidden="true" />
+                  {trend.replace(/_/g, " ")}
+                </div>
+                <div className="signal-room__matrix-link" role="cell">
+                  {source.latest_slug ? (
+                    <Link href={evidenceHref(source.latest_slug)}>Open -&gt;</Link>
+                  ) : (
+                    "—"
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
