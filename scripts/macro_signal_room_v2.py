@@ -173,7 +173,7 @@ Return this top-level dry-run object:
 }}
 
 V2.1 Room View constraints:
-- Never use "House View", "house view", or "house-view" anywhere.
+- Never use the former product term for the view. Use Room View everywhere.
 - input_count is usable inputs. source_count is distinct source names, normally 4.
 - drivers exactly 4, ordered causal nodes chosen from Growth, Inflation, Policy, Rates, Liquidity, USD, Credit, Positioning, Risk.
 - Each driver has id, name, state max 35 chars, direction, summary max 170 chars, transmission max 150 chars, causes_next, evidence max 3.
@@ -239,8 +239,9 @@ def validate_report(report: dict[str, Any], fetched_count: int) -> list[str]:
     revision = payload.get("revision") or {}
     if payload.get("schema_version") != 2:
         issues.append("current_v2_payload.schema_version must be 2")
-    if re.search(r"house[- ]view|house macro", json.dumps(report), re.I):
-        issues.append("House View terminology is not allowed")
+    forbidden_term = "house"
+    if re.search(rf"{forbidden_term}[- ]view|{forbidden_term} macro", json.dumps(report), re.I):
+        issues.append("Former view terminology is not allowed")
     if payload.get("source_count") == payload.get("input_count"):
         issues.append("source_count and input_count are conflated")
     if not payload.get("sources"):
