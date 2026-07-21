@@ -23,129 +23,7 @@ function MarkdownText({ children }) {
 function shorten(value, max = 180) {
   const clean = String(value || "").replace(/\*\*/g, "").trim();
   if (clean.length <= max) return clean;
-  return `${clean.slice(0, max).replace(/\s+\S*$/, "")}…`;
-}
-
-function extractConfidence(baseCase) {
-  const line = baseCase?.bullets?.find((item) => /^confidence:/i.test(item.replace(/\*\*/g, "")));
-  return line?.replace(/\*\*/g, "").replace(/^confidence:\s*/i, "").trim() || "Developing";
-}
-
-function findTheme(items, patterns, fallbackIndex) {
-  const match = items.find((item) => patterns.some((pattern) => pattern.test(item.label || "")));
-  return match || items[fallbackIndex] || null;
-}
-
-function ChangeItem({ label, text }) {
-  if (!text) return null;
-  return (
-    <div className="signal-room__change-item">
-      <span>{label}</span>
-      <p><MarkdownText>{shorten(text, 210)}</MarkdownText></p>
-    </div>
-  );
-}
-
-function NextTests({ items }) {
-  return (
-    <aside className="signal-room__tests">
-      <p className="signal-room__kicker">Next tests</p>
-      <ol>
-        {(items || []).slice(0, 4).map((item, index) => (
-          <li key={`${item}-${index}`}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <p><MarkdownText>{shorten(item, 150)}</MarkdownText></p>
-          </li>
-        ))}
-      </ol>
-      {!items?.length ? <p className="signal-room__empty">No catalysts captured yet.</p> : null}
-    </aside>
-  );
-}
-
-function RegimeTape({ themes, regime }) {
-  const themeItems = themes?.items || [];
-  const items = themeItems.length
-    ? themeItems.slice(0, 5).map((item) => ({ label: item.label || "Signal", text: item.text }))
-    : (regime?.bullets || []).slice(0, 5).map((item, index) => ({ label: `Regime ${index + 1}`, text: item }));
-
-  if (!items.length) return null;
-
-  return (
-    <section className="signal-room__regime" aria-label="Current regime tape">
-      <p className="signal-room__kicker">Regime tape</p>
-      <div className="signal-room__regime-cells">
-        {items.map((item, index) => (
-          <div key={`${item.label}-${index}`}>
-            <span>{item.label}</span>
-            <strong>{shorten(item.text, 72)}</strong>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function DriverChain({ themes }) {
-  const items = themes?.items || [];
-  const drivers = [
-    { label: "Growth", item: findTheme(items, [/growth/i], 0) },
-    { label: "Policy", item: findTheme(items, [/rates?|policy|fed/i], 1) },
-    { label: "Liquidity", item: findTheme(items, [/liquidity|credit/i], 2) },
-    { label: "Risk", item: findTheme(items, [/risk|equity|asset/i], 3) },
-  ];
-
-  return (
-    <section className="signal-room__drivers">
-      <header className="signal-room__section-head">
-        <div><p className="signal-room__kicker">Causal picture</p><h2>What is driving the view</h2></div>
-        <p>Read left to right</p>
-      </header>
-      <div className="signal-room__chain">
-        {drivers.map((driver, index) => (
-          <div className="signal-room__chain-step" key={driver.label}>
-            <article>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{driver.label}</h3>
-              <p>{driver.item ? shorten(driver.item.text, 135) : "Awaiting a clear cross-source signal."}</p>
-            </article>
-            {index < drivers.length - 1 ? <i aria-hidden="true">→</i> : null}
-          </div>
-        ))}
-      </div>
-      <p className="signal-room__chain-caption">
-        The room view is a chain of claims. Each link can be traced back to the source desks below.
-      </p>
-    </section>
-  );
-}
-
-function SourceAlignment({ desks, disagreement }) {
-  if (!desks.length) return null;
-  const dissent = (disagreement?.bullets || []).join(" ").toLowerCase();
-
-  return (
-    <section className="signal-room__alignment">
-      <header className="signal-room__section-head">
-        <div><p className="signal-room__kicker">Source alignment</p><h2>Where the desks stand</h2></div>
-        <p><span className="alignment-dot" /> Broad alignment <span className="alignment-dot alignment-dot--mixed" /> Active tension</p>
-      </header>
-      <div className="signal-room__source-table">
-        {desks.map((desk) => {
-          const hasDissent = dissent.includes(desk.name.toLowerCase());
-          return (
-            <article key={desk.name}>
-              <div><strong>{desk.name}</strong><span>{desk.regime || "Current stance"}</span></div>
-              <span className={`signal-room__alignment-state${hasDissent ? " signal-room__alignment-state--mixed" : ""}`}>
-                <i aria-hidden="true" />{hasDissent ? "Active tension" : "Broadly aligned"}
-              </span>
-              {desk.latest ? <Link href={desk.latest.href}>Latest evidence ↗</Link> : <span />}
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return `${clean.slice(0, max).replace(/\s+\S*$/, "")}...`;
 }
 
 function evidenceHref(slug) {
@@ -158,10 +36,147 @@ function EvidenceList({ evidence }) {
     <ul className="signal-room__evidence">
       {evidence.slice(0, 4).map((item) => (
         <li key={`${item.slug}-${item.claim}`}>
-          <Link href={evidenceHref(item.slug)}>{item.source}</Link>: {item.claim}
+          <Link href={evidenceHref(item.slug)}>{item.source}</Link>
+          <span>{item.claim}</span>
         </li>
       ))}
     </ul>
+  );
+}
+
+function EvidenceDisclosure({ evidence, label = "Evidence" }) {
+  if (!evidence?.length) return null;
+  return (
+    <details className="signal-room__disclosure">
+      <summary>{label}<span>{evidence.length}</span></summary>
+      <EvidenceList evidence={evidence} />
+    </details>
+  );
+}
+
+function ChangeItem({ label, text }) {
+  if (!text) return null;
+  return (
+    <div className="signal-room__change-item">
+      <span>{label}</span>
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function V2NextTests({ tests }) {
+  return (
+    <aside className="signal-room__tests">
+      <div className="signal-room__panel-head">
+        <p className="signal-room__kicker">Next tests</p>
+        <span>{tests?.length || 0} active</span>
+      </div>
+      <ol>
+        {(tests || []).slice(0, 4).map((test, index) => (
+          <li key={`${test.title}-${index}`}>
+            <span className="signal-room__test-index">{String(index + 1).padStart(2, "0")}</span>
+            <div className="signal-room__test-copy">
+              <div><h3>{test.title}</h3><span>{test.window}</span></div>
+              <p>{test.description}</p>
+              <details className="signal-room__test-detail">
+                <summary>Test conditions</summary>
+                <dl>
+                  <div><dt>Confirms</dt><dd>{test.confirmation}</dd></div>
+                  <div><dt>Breaks</dt><dd>{test.invalidation}</dd></div>
+                </dl>
+                <EvidenceList evidence={test.evidence} />
+              </details>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {!tests?.length ? <p className="signal-room__empty">Awaiting structured tests.</p> : null}
+    </aside>
+  );
+}
+
+function DirectionMark({ direction }) {
+  const value = direction || "flat";
+  return <span className={`signal-room__direction signal-room__direction--${value}`}>{value.replace("_", " ")}</span>;
+}
+
+function AlignmentMark({ value }) {
+  const normalized = value || "no_view";
+  const labels = { aligned: "Aligned", mixed: "Mixed", not_aligned: "Not aligned", no_view: "No view" };
+  const glyphs = { aligned: "+", mixed: "~", not_aligned: "x", no_view: "-" };
+  return (
+    <span className={`signal-room__matrix-mark signal-room__matrix-mark--${normalized}`} aria-label={labels[normalized]}>
+      {glyphs[normalized]}
+    </span>
+  );
+}
+
+function V2DriverChain({ drivers }) {
+  return (
+    <section className="signal-room__drivers">
+      <header className="signal-room__section-head">
+        <div><p className="signal-room__kicker">Causal picture</p><h2>What is driving the room view</h2></div>
+        <p>Primary transmission / left to right</p>
+      </header>
+      <div className="signal-room__chain">
+        {drivers.map((driver, index) => (
+          <div className="signal-room__chain-step" key={driver.id || driver.name}>
+            <article>
+              <header>
+                <span className="signal-room__driver-index">{String(index + 1).padStart(2, "0")}</span>
+                <DirectionMark direction={driver.direction} />
+              </header>
+              <h3>{driver.name}</h3>
+              <strong className="signal-room__driver-signal">{driver.signal || driver.state}</strong>
+              <p>{driver.summary}</p>
+              {index < drivers.length - 1 ? (
+                <div className="signal-room__transmission">
+                  <span>Transmits to {drivers[index + 1]?.name}</span>
+                  <p>{driver.transmission || driver.causes_next}</p>
+                </div>
+              ) : null}
+              <EvidenceDisclosure evidence={driver.evidence} />
+            </article>
+            {index < drivers.length - 1 ? <i aria-hidden="true">-&gt;</i> : null}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function V2SourceMatrix({ sources, drivers }) {
+  return (
+    <section className="signal-room__alignment">
+      <header className="signal-room__section-head">
+        <div><p className="signal-room__kicker">Source alignment</p><h2>Where the desks stand</h2></div>
+        <div className="signal-room__matrix-legend"><span>+ Aligned</span><span>~ Mixed</span><span>- No view</span></div>
+      </header>
+      <div className="signal-room__matrix-wrap">
+        <div className="signal-room__matrix" style={{ "--driver-count": drivers.length }} role="table" aria-label="Source alignment by causal driver">
+          <div className="signal-room__matrix-header" role="row">
+            <span role="columnheader">Desk</span>
+            {drivers.map((driver) => <span role="columnheader" key={driver.id}>{driver.name}</span>)}
+            <span role="columnheader">Trend</span>
+            <span role="columnheader">Evidence</span>
+          </div>
+          {sources.map((source) => (
+            <div className="signal-room__matrix-row" role="row" key={source.source}>
+              <div className="signal-room__matrix-source" role="rowheader"><strong>{source.source}</strong><span>{source.stance}</span></div>
+              {drivers.map((driver) => (
+                <div className="signal-room__matrix-cell" role="cell" key={driver.id}>
+                  <AlignmentMark value={source.positions?.[driver.id]} />
+                </div>
+              ))}
+              <div className="signal-room__matrix-trend" role="cell"><i aria-hidden="true" />{source.trend || "unchanged"}</div>
+              <div className="signal-room__matrix-link" role="cell">
+                {source.latest_slug ? <Link href={evidenceHref(source.latest_slug)}>Open +</Link> : "-"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -169,139 +184,94 @@ function V2MacroBriefingReader({ content }) {
   const updatedLabel = content.meta.updatedAt
     ? new Date(content.meta.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
     : formatBriefingDate(content.meta.date);
+  const roomView = content.roomView;
+  const regimeDefinition = content.regime.definition || content.regime.description;
+  const sourceCount = content.meta.sourceCount || content.sourceAlignment.length;
+  const inputCount = content.meta.inputCount || 0;
 
   return (
     <div className="signal-room">
       <section className="signal-room__command">
         <article className="signal-room__call">
-          <p className="signal-room__kicker">The call</p>
-          <h1>{content.call.headline || content.meta.title}</h1>
-          <p className="signal-room__call-support">{content.call.thesis}</p>
+          <div className="signal-room__panel-head"><p className="signal-room__kicker">The call</p><span>{roomView.horizon || "Current horizon"}</span></div>
+          <h1>{roomView.headline || content.meta.title}</h1>
+          <p className="signal-room__call-support">{roomView.thesis}</p>
           <footer>
-            <span>Primary view <strong>{content.call.primary_view || "Room view"}</strong></span>
+            <span>Primary view <strong>{roomView.primary_view || "Room view"}</strong></span>
             <span>Last updated <strong>{updatedLabel}</strong></span>
-            <span>Confidence <strong>{content.call.confidence || "unknown"}</strong></span>
+            <span>Confidence <strong>{roomView.confidence || "unknown"}</strong></span>
           </footer>
         </article>
 
         <aside className="signal-room__revision">
-          <div><p className="signal-room__kicker">Since last update</p><time>{updatedLabel}</time></div>
+          <div className="signal-room__panel-head"><p className="signal-room__kicker">Since last update</p><time>{updatedLabel}</time></div>
           <ChangeItem label="What changed" text={content.revision.changed} />
           <ChangeItem label="What held" text={content.revision.held || content.revision.unchanged} />
           <ChangeItem label="Why it matters" text={content.revision.impact} />
-          <EvidenceList evidence={content.revision.evidence} />
+          <EvidenceDisclosure evidence={content.revision.evidence} label="Supporting sources" />
         </aside>
 
-        <NextTests items={content.nextTests?.map((test) => `${test.title}: ${test.description}`)} />
+        <V2NextTests tests={content.nextTests} />
       </section>
 
-      <section className="signal-room__regime" aria-label="Current regime tape">
-        <p className="signal-room__kicker">Regime tape</p>
+      <section className="signal-room__regime signal-room__regime--v2" aria-label="Current regime">
+        <div className="signal-room__regime-title"><p className="signal-room__kicker">Current regime</p><span>{content.regime.since ? `Since ${content.regime.since}` : "Live"}</span></div>
         <div className="signal-room__regime-cells">
           <div><span>Regime</span><strong>{content.regime.label || "Unknown"}</strong></div>
-          <div><span>Definition</span><strong>{shorten(content.regime.description, 90)}</strong></div>
-          <div><span>Bias</span><strong>{shorten(content.call.bias, 90)}</strong></div>
-          <div><span>Invalidation</span><strong>{shorten(content.call.invalidation, 90)}</strong></div>
+          <div><span>Definition</span><strong>{regimeDefinition}</strong></div>
+          <div><span>Bias</span><strong>{roomView.bias || content.regime.bias}</strong></div>
+          <div><span>Invalidation</span><strong>{roomView.invalidation || content.regime.invalidation}</strong></div>
         </div>
       </section>
 
-      <section className="signal-room__drivers">
-        <header className="signal-room__section-head">
-          <div><p className="signal-room__kicker">Causal picture</p><h2>What is driving the view</h2></div>
-          <p>Read left to right</p>
-        </header>
-        <div className="signal-room__chain">
-          {content.drivers.map((driver, index) => (
-            <div className="signal-room__chain-step" key={driver.id || driver.name}>
-              <article>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{driver.name}</h3>
-                <p>{driver.summary}</p>
-                <p>{driver.transmission || driver.causes_next}</p>
-                <EvidenceList evidence={driver.evidence} />
-              </article>
-              {index < content.drivers.length - 1 ? <i aria-hidden="true">→</i> : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="signal-room__alignment">
-        <header className="signal-room__section-head">
-          <div><p className="signal-room__kicker">Source alignment</p><h2>Where the desks stand</h2></div>
-        </header>
-        <div className="signal-room__source-table">
-          {content.sourceAlignment.map((source) => (
-            <article key={source.source}>
-              <div><strong>{source.source}</strong><span>{source.stance}</span></div>
-              <span className="signal-room__alignment-state"><i aria-hidden="true" />{source.trend || "unchanged"}</span>
-              {source.latest_slug ? <Link href={evidenceHref(source.latest_slug)}>Latest evidence ↗</Link> : <span />}
-            </article>
-          ))}
-        </div>
-      </section>
+      <V2DriverChain drivers={content.drivers} />
+      <V2SourceMatrix sources={content.sourceAlignment} drivers={content.drivers} />
 
       <footer className="signal-room__engine">
         <strong>Synthesis engine V2</strong>
-        <span>Maintaining the room view from {content.meta.sourceCount || 0} inputs</span>
-        <Link href="/macro/revisions">Open revisions →</Link>
+        <span>{inputCount} inputs / {sourceCount} sources / Current through {content.payload?.through_date || content.meta.date}</span>
+        <Link href="/macro/revisions">Open revisions -&gt;</Link>
       </footer>
+    </div>
+  );
+}
+
+function extractConfidence(baseCase) {
+  const line = baseCase?.bullets?.find((item) => /^confidence:/i.test(item.replace(/\*\*/g, "")));
+  return line?.replace(/\*\*/g, "").replace(/^confidence:\s*/i, "").trim() || "Developing";
+}
+
+function LegacyNextTests({ items }) {
+  return (
+    <aside className="signal-room__tests">
+      <p className="signal-room__kicker">Next tests</p>
+      <ol>{(items || []).slice(0, 4).map((item, index) => <li key={`${item}-${index}`}><span className="signal-room__test-index">{String(index + 1).padStart(2, "0")}</span><p><MarkdownText>{shorten(item, 150)}</MarkdownText></p></li>)}</ol>
+    </aside>
+  );
+}
+
+function LegacyMacroBriefingReader({ content }) {
+  const updatedLabel = content.meta.updatedAt
+    ? new Date(content.meta.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+    : formatBriefingDate(content.meta.date);
+  const call = content.baseCase?.paragraphs?.[0] || content.snapshot?.bullets?.[0] || content.regime?.bullets?.[0] || "The room view is still forming as new signals arrive.";
+  const support = content.baseCase?.bullets?.[0] || content.snapshot?.bullets?.[1];
+  const themes = content.themes?.items || [];
+
+  return (
+    <div className="signal-room">
+      <section className="signal-room__command">
+        <article className="signal-room__call"><p className="signal-room__kicker">The call</p><h1><MarkdownText>{shorten(call, 245)}</MarkdownText></h1>{support ? <p className="signal-room__call-support"><MarkdownText>{support}</MarkdownText></p> : null}<footer><span>Primary view <strong>Room view</strong></span><span>Last updated <strong>{updatedLabel}</strong></span><span>Confidence <strong>{extractConfidence(content.baseCase)}</strong></span></footer></article>
+        <aside className="signal-room__revision"><p className="signal-room__kicker">Since last update</p><ChangeItem label="What changed" text={content.whatChanged?.bullets?.[0]} /><ChangeItem label="What held" text={content.agreement?.bullets?.[0]} /></aside>
+        <LegacyNextTests items={content.watchlist?.bullets} />
+      </section>
+      <V2DriverChain drivers={themes.slice(0, 4).map((item, index) => ({ id: item.label || `driver-${index}`, name: item.label || "Driver", summary: item.text, signal: "Legacy signal", direction: "flat", evidence: [] }))} />
+      <footer className="signal-room__engine"><strong>Synthesis engine</strong><span>Legacy Room View format</span><Link href="/macro/inputs">Open signals -&gt;</Link></footer>
     </div>
   );
 }
 
 export default function MacroBriefingReader({ briefing }) {
   const content = prepareMacroBriefing(briefing);
-  if (content.v2) return <V2MacroBriefingReader content={content} />;
-  const updatedLabel = content.meta.updatedAt
-    ? new Date(content.meta.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
-    : formatBriefingDate(content.meta.date);
-  const call = content.baseCase?.paragraphs?.[0]
-    || content.snapshot?.bullets?.[0]
-    || content.regime?.bullets?.[0]
-    || "The room view is still forming as new signals arrive.";
-  const callSupport = content.baseCase?.bullets?.find((item) => !/^confidence:|^bias:|^invalidation:/i.test(item.replace(/\*\*/g, "")))
-    || content.snapshot?.bullets?.[1];
-  const changed = content.whatChanged?.bullets || [];
-  const held = content.agreement?.bullets || [];
-
-  return (
-    <div className="signal-room">
-      <section className="signal-room__command">
-        <article className="signal-room__call">
-          <p className="signal-room__kicker">The call</p>
-          <h1><MarkdownText>{shorten(call, 245)}</MarkdownText></h1>
-          {callSupport ? <p className="signal-room__call-support"><MarkdownText>{shorten(callSupport, 220)}</MarkdownText></p> : null}
-          <footer>
-            <span>Primary view <strong>Room view</strong></span>
-            <span>Last updated <strong>{updatedLabel}</strong></span>
-            <span>Confidence <strong>{extractConfidence(content.baseCase)}</strong></span>
-          </footer>
-        </article>
-
-        <aside className="signal-room__revision">
-          <div><p className="signal-room__kicker">Since last update</p><time>{updatedLabel}</time></div>
-          <ChangeItem label="What changed" text={changed[0]} />
-          <ChangeItem label="What held" text={held[0]} />
-          <ChangeItem label="Why it matters" text={changed[1] || content.snapshot?.bullets?.[2]} />
-          {!changed.length && !held.length ? <p className="signal-room__empty">Revision notes will appear after the next synthesis.</p> : null}
-        </aside>
-
-        <NextTests items={content.watchlist?.bullets} />
-      </section>
-
-      <RegimeTape themes={content.themes} regime={content.regime} />
-
-      <div className="signal-room__analysis-grid">
-        <DriverChain themes={content.themes} />
-        <SourceAlignment desks={content.desks} disagreement={content.disagreement} />
-      </div>
-
-      <footer className="signal-room__engine">
-        <strong>Synthesis engine</strong>
-        <span>Continuously maintaining the room view from {content.meta.sourceCount || content.desks.length} inputs</span>
-        <Link href="/macro/inputs">Open all signals →</Link>
-      </footer>
-    </div>
-  );
+  return content.v2 ? <V2MacroBriefingReader content={content} /> : <LegacyMacroBriefingReader content={content} />;
 }

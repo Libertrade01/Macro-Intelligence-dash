@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Outfit:wght@500;600;700&display=swap');
 
 :root {
-  --bg: #f1efe7;
-  --bg-deep: #e9e6dc;
-  --surface: #f7f5ed;
-  --surface2: #e5e2d7;
-  --border: #d1cec2;
-  --border2: #b8b5a9;
-  --text: #243029;
-  --ink: #17211b;
-  --muted: #73776e;
+  --bg: #eeeade;
+  --bg-deep: #e4dfd1;
+  --surface: #f8f5eb;
+  --surface2: #e8e3d6;
+  --border: #cec8b8;
+  --border2: #afa997;
+  --text: #30413b;
+  --ink: #102725;
+  --muted: #6c7770;
   --faint: #9a9c94;
-  --brand: #667f3a;
-  --brand-strong: #405923;
-  --brand-dim: rgba(102, 127, 58, 0.12);
-  --amber: #a57b18;
-  --red: #9a5147;
-  --nav-bg: rgba(241, 239, 231, 0.92);
+  --brand: #73913b;
+  --brand-strong: #46631e;
+  --brand-dim: rgba(115, 145, 59, 0.14);
+  --amber: #a8740e;
+  --red: #a94f47;
+  --nav-bg: rgba(248, 245, 235, 0.91);
   --wash: rgba(255, 255, 255, 0.55);
   --hover: rgba(255, 255, 255, 0.3);
   --font-sans: 'DM Sans', sans-serif;
@@ -56,6 +56,7 @@ html,
 body {
   min-height: 100%;
   background:
+    linear-gradient(90deg, transparent 0 49.95%, color-mix(in srgb, var(--border) 18%, transparent) 50%, transparent 50.05%),
     radial-gradient(circle at 12% 8%, var(--wash), transparent 28rem),
     var(--bg);
   color: var(--text);
@@ -83,7 +84,7 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .studio-shell { min-height: 100dvh; }
 
 .studio-topbar {
-  min-height: 70px;
+  min-height: 66px;
   display: grid;
   grid-template-columns: minmax(230px, 1fr) auto minmax(180px, 1fr);
   align-items: center;
