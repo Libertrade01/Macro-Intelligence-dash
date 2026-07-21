@@ -2,7 +2,13 @@ import { BRIEFING_TYPES, MACRO_LIVING_SLUG } from "./briefing-types";
 import { createPublicClient, createServiceClient } from "./supabase";
 
 const BRIEFING_COLUMNS =
-  "id, slug, type, title, date, status, primary_signal, source_count, sources, top_story, content_markdown, created_at, updated_at, read_at";
+  "id, slug, type, title, date, status, primary_signal, source_count, sources, top_story, content_markdown, content_json, prompt_version, evidence_slugs, created_at, updated_at, read_at";
+
+const REVISION_COLUMNS =
+  "id, version, effective_at, through_date, trigger_slugs, attached_input_slugs, material_change, change_summary, payload, metadata, created_at, updated_at";
+
+const REGIME_CHANGE_COLUMNS =
+  "id, from_regime, to_regime, effective_at, reason, trigger_slugs, evidence, created_at";
 
 export async function listBriefings({ limit = 30, type = BRIEFING_TYPES.AI } = {}) {
   const supabase = createPublicClient();
@@ -87,7 +93,77 @@ export async function getMacroSynthesisContext({ limit = 80 } = {}) {
   return {
     inputs: inputs || [],
     currentOverview,
+    revisions: await listMacroHouseViewRevisions({ limit: 20 }),
+    regimeChanges: await listMacroRegimeChanges({ limit: 20 }),
   };
+}
+
+export async function listMacroHouseViewRevisions({ limit = 30 } = {}) {
+  const supabase = createServiceClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("macro_house_view_revisions")
+    .select(REVISION_COLUMNS)
+    .order("effective_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("listMacroHouseViewRevisions:", error.message);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function upsertMacroHouseViewRevision(record) {
+  const supabase = createServiceClient();
+  if (!supabase) {
+    throw new Error("Supabase service client not configured");
+  }
+
+  const { data, error } = await supabase
+    .from("macro_house_view_revisions")
+    .upsert(record, { onConflict: "version" })
+    .select(REVISION_COLUMNS)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function listMacroRegimeChanges({ limit = 30 } = {}) {
+  const supabase = createServiceClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("macro_regime_changes")
+    .select(REGIME_CHANGE_COLUMNS)
+    .order("effective_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("listMacroRegimeChanges:", error.message);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function insertMacroRegimeChange(record) {
+  const supabase = createServiceClient();
+  if (!supabase) {
+    throw new Error("Supabase service client not configured");
+  }
+
+  const { data, error } = await supabase
+    .from("macro_regime_changes")
+    .insert(record)
+    .select(REGIME_CHANGE_COLUMNS)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export async function upsertBriefing(record) {

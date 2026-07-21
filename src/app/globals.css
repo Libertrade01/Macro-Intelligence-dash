@@ -367,3 +367,52 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
   .signal-row > time { display: none; }
   .studio-content { padding: 44px 20px 80px; }
 }
+
+.signal-room__evidence {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.signal-room__evidence li {
+  border-left: 1px solid var(--border);
+  padding-left: 0.65rem;
+}
+.signal-room__evidence a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.signal-room__revision-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.signal-room__revision-list > h2 {
+  margin-top: 1.5rem;
+}
+.signal-room__revision-card {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--panel);
+  padding: 1.1rem;
+}
+.signal-room__revision-card header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.signal-room__revision-card h2 {
+  margin: 0.75rem 0;
+  font-size: 1.05rem;
+}
+.signal-room__revision-card p,
+.signal-room__revision-card small {
+  color: var(--muted);
+  line-height: 1.55;
+}

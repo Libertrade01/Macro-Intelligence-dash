@@ -95,7 +95,45 @@ function sectionPayload(section) {
   };
 }
 
+function collectEvidenceSlugs(payload) {
+  const slugs = new Set();
+  for (const item of payload?.revision?.evidence || []) if (item?.slug) slugs.add(item.slug);
+  for (const driver of payload?.drivers || []) {
+    for (const item of driver?.evidence || []) if (item?.slug) slugs.add(item.slug);
+  }
+  for (const test of payload?.next_tests || []) {
+    for (const item of test?.evidence || []) if (item?.slug) slugs.add(item.slug);
+  }
+  return [...slugs];
+}
+
+function prepareV2MacroBriefing(briefing) {
+  const payload = briefing.content_json;
+  return {
+    v2: true,
+    payload,
+    evidenceSlugs: collectEvidenceSlugs(payload),
+    meta: {
+      title: briefing.title,
+      date: briefing.date,
+      updatedAt: briefing.updated_at,
+      sourceCount: payload?.input_count || briefing.source_count,
+      sources: briefing.sources || [],
+    },
+    call: payload?.call || {},
+    revision: payload?.revision || {},
+    regime: payload?.regime || {},
+    drivers: payload?.drivers || [],
+    nextTests: payload?.next_tests || [],
+    sourceAlignment: payload?.source_alignment || [],
+  };
+}
+
 export function prepareMacroBriefing(briefing) {
+  if (briefing.content_json?.schema_version === 2) {
+    return prepareV2MacroBriefing(briefing);
+  }
+
   const sections = parseBriefingSections(briefing.content_markdown);
   const byTitle = (name) =>
     sections.find((section) => section.title.toLowerCase() === name.toLowerCase());

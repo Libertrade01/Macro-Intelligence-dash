@@ -78,6 +78,13 @@ export function validateIngestPayload(body) {
     errors.push("content_markdown is required");
   }
 
+  if (
+    body.content_json !== undefined &&
+    (!body.content_json || typeof body.content_json !== "object" || Array.isArray(body.content_json))
+  ) {
+    errors.push("content_json must be an object when provided");
+  }
+
   const status = body.status || "ready";
   if (!VALID_STATUSES.has(status)) {
     errors.push(`status must be one of: ${[...VALID_STATUSES].join(", ")}`);
@@ -110,25 +117,28 @@ export function validateIngestPayload(body) {
       ? [String(body.show)]
       : [];
 
-  return {
-    ok: true,
-    data: {
-      slug,
-      type: body.type,
-      title: body.title.trim(),
-      date: body.date,
-      status,
-      primary_signal: body.primary_signal || null,
-      source_count: typeof body.source_count === "number" ? body.source_count : null,
-      sources,
-      top_story: body.top_story
-        ? String(body.top_story).trim()
-        : body.episode
-          ? String(body.episode).trim()
-          : null,
-      content_markdown: body.content_markdown.trim(),
-    },
+  const data = {
+    slug,
+    type: body.type,
+    title: body.title.trim(),
+    date: body.date,
+    status,
+    primary_signal: body.primary_signal || null,
+    source_count: typeof body.source_count === "number" ? body.source_count : null,
+    sources,
+    top_story: body.top_story
+      ? String(body.top_story).trim()
+      : body.episode
+        ? String(body.episode).trim()
+        : null,
+    content_markdown: body.content_markdown.trim(),
   };
+
+  if (body.content_json) data.content_json = body.content_json;
+  if (body.prompt_version) data.prompt_version = String(body.prompt_version).trim();
+  if (Array.isArray(body.evidence_slugs)) data.evidence_slugs = body.evidence_slugs.map(String);
+
+  return { ok: true, data };
 }
 
 export function verifyIngestAuth(request) {

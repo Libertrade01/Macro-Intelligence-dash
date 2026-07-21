@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 const NAV = [
   { href: "/macro", label: "Today" },
   { href: "/macro/inputs", label: "Signals" },
+  { href: "/macro/revisions", label: "Revisions" },
 ];
 
 function isNavActive(pathname, href) {

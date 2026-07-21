@@ -14,21 +14,24 @@ function sourceName(briefing) {
 function serializeBriefing(briefing) {
   if (!briefing) return null;
 
-  return {
-    slug: briefing.slug,
-    type: briefing.type,
-    title: briefing.title,
-    date: briefing.date,
-    status: briefing.status,
-    source: sourceName(briefing),
-    sources: briefing.sources || [],
-    top_story: briefing.top_story,
-    primary_signal: briefing.primary_signal,
-    source_count: briefing.source_count,
-    content_markdown: briefing.content_markdown,
-    created_at: briefing.created_at,
-    updated_at: briefing.updated_at,
-  };
+    return {
+      slug: briefing.slug,
+      type: briefing.type,
+      title: briefing.title,
+      date: briefing.date,
+      status: briefing.status,
+      source: sourceName(briefing),
+      sources: briefing.sources || [],
+      top_story: briefing.top_story,
+      primary_signal: briefing.primary_signal,
+      source_count: briefing.source_count,
+      content_markdown: briefing.content_markdown,
+      content_json: briefing.content_json,
+      prompt_version: briefing.prompt_version,
+      evidence_slugs: briefing.evidence_slugs || [],
+      created_at: briefing.created_at,
+      updated_at: briefing.updated_at,
+    };
 }
 
 export async function GET(request) {
@@ -51,13 +54,15 @@ export async function GET(request) {
     : 80;
 
   try {
-    const { inputs, currentOverview } = await getMacroSynthesisContext({ limit });
+    const { inputs, currentOverview, revisions, regimeChanges } = await getMacroSynthesisContext({ limit });
 
     return NextResponse.json({
       ok: true,
       count: inputs.length,
       inputs: inputs.map(serializeBriefing),
       current_overview: serializeBriefing(currentOverview),
+      revisions,
+      regime_changes: regimeChanges,
     });
   } catch (error) {
     return NextResponse.json(
