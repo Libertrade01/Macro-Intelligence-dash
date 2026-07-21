@@ -10,8 +10,8 @@ const INPUT_TYPES = new Set([BRIEFING_TYPES.PODCAST, BRIEFING_TYPES.NEWSLETTER])
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const briefing = await getBriefingBySlug(slug);
-  if (!briefing) return { title: "Not found — Macro Intelligence" };
-  return { title: `${briefing.title} — Macro Intelligence` };
+  if (!briefing) return { title: "Not found — Macro Signal Room" };
+  return { title: `${briefing.title} — Macro Signal Room` };
 }
 
 export default async function MacroInputPage({ params }) {

@@ -7,17 +7,12 @@ import { formatBriefingDate } from "../../lib/briefings";
 
 function MarkdownText({ children }) {
   if (!children) return null;
-
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        p: ({ children }) => <>{children}</>,
-        a: ({ href, children }) => (
-          <Link href={href || "#"} className="macro-dash__inline-link">
-            {children}
-          </Link>
-        ),
+        p: ({ children: value }) => <>{value}</>,
+        a: ({ href, children: value }) => <Link href={href || "#"}>{value}</Link>,
       }}
     >
       {children}
@@ -25,219 +20,185 @@ function MarkdownText({ children }) {
   );
 }
 
-function BulletList({ items, variant }) {
-  if (!items?.length) {
-    return <p className="macro-dash__empty">Nothing captured yet.</p>;
-  }
+function shorten(value, max = 180) {
+  const clean = String(value || "").replace(/\*\*/g, "").trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max).replace(/\s+\S*$/, "")}…`;
+}
 
+function extractConfidence(baseCase) {
+  const line = baseCase?.bullets?.find((item) => /^confidence:/i.test(item.replace(/\*\*/g, "")));
+  return line?.replace(/\*\*/g, "").replace(/^confidence:\s*/i, "").trim() || "Developing";
+}
+
+function findTheme(items, patterns, fallbackIndex) {
+  const match = items.find((item) => patterns.some((pattern) => pattern.test(item.label || "")));
+  return match || items[fallbackIndex] || null;
+}
+
+function ChangeItem({ label, text }) {
+  if (!text) return null;
   return (
-    <ul className={`macro-dash__list${variant ? ` macro-dash__list--${variant}` : ""}`}>
-      {items.map((item, index) => (
-        <li key={`${item}-${index}`}>
-          <MarkdownText>{item}</MarkdownText>
-        </li>
-      ))}
-    </ul>
+    <div className="signal-room__change-item">
+      <span>{label}</span>
+      <p><MarkdownText>{shorten(text, 210)}</MarkdownText></p>
+    </div>
   );
 }
 
-function SnapshotStrip({ snapshot, fallback }) {
-  const items = snapshot?.bullets?.length ? snapshot.bullets : fallback?.bullets || [];
+function NextTests({ items }) {
+  return (
+    <aside className="signal-room__tests">
+      <p className="signal-room__kicker">Next tests</p>
+      <ol>
+        {(items || []).slice(0, 4).map((item, index) => (
+          <li key={`${item}-${index}`}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <p><MarkdownText>{shorten(item, 150)}</MarkdownText></p>
+          </li>
+        ))}
+      </ol>
+      {!items?.length ? <p className="signal-room__empty">No catalysts captured yet.</p> : null}
+    </aside>
+  );
+}
+
+function RegimeTape({ themes, regime }) {
+  const themeItems = themes?.items || [];
+  const items = themeItems.length
+    ? themeItems.slice(0, 5).map((item) => ({ label: item.label || "Signal", text: item.text }))
+    : (regime?.bullets || []).slice(0, 5).map((item, index) => ({ label: `Regime ${index + 1}`, text: item }));
 
   if (!items.length) return null;
 
   return (
-    <section className="macro-dash__snapshot" aria-label="Macro snapshot">
-      {items.slice(0, 6).map((item, index) => (
-        <div key={`${item}-${index}`} className="macro-dash__snapshot-item">
-          <span>{String(index + 1).padStart(2, "0")}</span>
-          <p>
-            <MarkdownText>{item}</MarkdownText>
-          </p>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function BaseCasePanel({ baseCase, regime }) {
-  const paragraphs = baseCase?.paragraphs || [];
-  const bullets = baseCase?.bullets || [];
-  const fallback = regime?.bullets || [];
-
-  if (!paragraphs.length && !bullets.length && !fallback.length) return null;
-
-  return (
-    <section className="macro-dash__base">
-      <div className="macro-dash__section-kicker">Base case</div>
-      {paragraphs[0] ? (
-        <p className="macro-dash__base-text">
-          <MarkdownText>{paragraphs[0]}</MarkdownText>
-        </p>
-      ) : null}
-      <BulletList items={bullets.length ? bullets : fallback.slice(0, 4)} />
-    </section>
-  );
-}
-
-function ThemeGrid({ themes }) {
-  const items = themes?.items || [];
-  if (!items.length) return null;
-
-  return (
-    <section className="macro-dash__themes">
-      <div className="macro-dash__section-head">
-        <div>
-          <p className="macro-dash__section-kicker">Theme map</p>
-          <h2>Drivers of the current tape</h2>
-        </div>
-      </div>
-      <div className="macro-dash__theme-grid">
+    <section className="signal-room__regime" aria-label="Current regime tape">
+      <p className="signal-room__kicker">Regime tape</p>
+      <div className="signal-room__regime-cells">
         {items.map((item, index) => (
-          <article key={`${item.raw}-${index}`} className="macro-dash__theme">
-            <div className="macro-dash__theme-index">{String(index + 1).padStart(2, "0")}</div>
-            <h3>{item.label || "Theme"}</h3>
-            <p>
-              <MarkdownText>{item.text}</MarkdownText>
-            </p>
-          </article>
+          <div key={`${item.label}-${index}`}>
+            <span>{item.label}</span>
+            <strong>{shorten(item.text, 72)}</strong>
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-function CompactPanel({ title, kicker, items, variant }) {
-  if (!items?.length) return null;
+function DriverChain({ themes }) {
+  const items = themes?.items || [];
+  const drivers = [
+    { label: "Growth", item: findTheme(items, [/growth/i], 0) },
+    { label: "Policy", item: findTheme(items, [/rates?|policy|fed/i], 1) },
+    { label: "Liquidity", item: findTheme(items, [/liquidity|credit/i], 2) },
+    { label: "Risk", item: findTheme(items, [/risk|equity|asset/i], 3) },
+  ];
 
   return (
-    <section className={`macro-dash__panel${variant ? ` macro-dash__panel--${variant}` : ""}`}>
-      <p className="macro-dash__section-kicker">{kicker}</p>
-      <h2>{title}</h2>
-      <BulletList items={items} variant={variant} />
+    <section className="signal-room__drivers">
+      <header className="signal-room__section-head">
+        <div><p className="signal-room__kicker">Causal picture</p><h2>What is driving the view</h2></div>
+        <p>Read left to right</p>
+      </header>
+      <div className="signal-room__chain">
+        {drivers.map((driver, index) => (
+          <div className="signal-room__chain-step" key={driver.label}>
+            <article>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{driver.label}</h3>
+              <p>{driver.item ? shorten(driver.item.text, 135) : "Awaiting a clear cross-source signal."}</p>
+            </article>
+            {index < drivers.length - 1 ? <i aria-hidden="true">→</i> : null}
+          </div>
+        ))}
+      </div>
+      <p className="signal-room__chain-caption">
+        The house view is a chain of claims. Each link can be traced back to the source desks below.
+      </p>
     </section>
   );
 }
 
-function DeskCard({ desk }) {
+function SourceAlignment({ desks, disagreement }) {
+  if (!desks.length) return null;
+  const dissent = (disagreement?.bullets || []).join(" ").toLowerCase();
+
   return (
-    <article className="macro-dash__desk">
-      <header className="macro-dash__desk-head">
-        <div>
-          <p className="macro-dash__desk-label">Source desk</p>
-          <h3>{desk.name}</h3>
-        </div>
-        {desk.regime ? <span className="macro-dash__chip">{desk.regime}</span> : null}
+    <section className="signal-room__alignment">
+      <header className="signal-room__section-head">
+        <div><p className="signal-room__kicker">Source alignment</p><h2>Where the desks stand</h2></div>
+        <p><span className="alignment-dot" /> Broad alignment <span className="alignment-dot alignment-dot--mixed" /> Active tension</p>
       </header>
-      <BulletList items={desk.bullets} />
-      {desk.latest ? (
-        <Link href={desk.latest.href} className="macro-dash__desk-link">
-          {desk.latest.label}
-          <span aria-hidden="true">&rarr;</span>
-        </Link>
-      ) : null}
-    </article>
+      <div className="signal-room__source-table">
+        {desks.map((desk) => {
+          const hasDissent = dissent.includes(desk.name.toLowerCase());
+          return (
+            <article key={desk.name}>
+              <div><strong>{desk.name}</strong><span>{desk.regime || "Current stance"}</span></div>
+              <span className={`signal-room__alignment-state${hasDissent ? " signal-room__alignment-state--mixed" : ""}`}>
+                <i aria-hidden="true" />{hasDissent ? "Active tension" : "Broadly aligned"}
+              </span>
+              {desk.latest ? <Link href={desk.latest.href}>Latest evidence ↗</Link> : <span />}
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
 export default function MacroBriefingReader({ briefing }) {
   const content = prepareMacroBriefing(briefing);
   const updatedLabel = content.meta.updatedAt
-    ? new Date(content.meta.updatedAt).toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+    ? new Date(content.meta.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
     : formatBriefingDate(content.meta.date);
+  const call = content.baseCase?.paragraphs?.[0]
+    || content.snapshot?.bullets?.[0]
+    || content.regime?.bullets?.[0]
+    || "The house view is still forming as new signals arrive.";
+  const callSupport = content.baseCase?.bullets?.find((item) => !/^confidence:|^bias:|^invalidation:/i.test(item.replace(/\*\*/g, "")))
+    || content.snapshot?.bullets?.[1];
+  const changed = content.whatChanged?.bullets || [];
+  const held = content.agreement?.bullets || [];
 
   return (
-    <div className="macro-dash">
-      <header className="macro-dash__hero">
-        <div className="macro-dash__hero-copy">
-          <p className="macro-dash__eyebrow">Macro Mind</p>
-          <h1 className="macro-dash__title">{content.meta.title}</h1>
-          <p className="macro-dash__subtitle">
-            Living synthesis across podcasts, newsletters, and desk notes.
-          </p>
-        </div>
-        <div className="macro-dash__status-board" aria-label="Overview metadata">
-          <div>
-            <span>Updated</span>
-            <strong>{updatedLabel}</strong>
-          </div>
-          {content.meta.sourceCount ? (
-            <div>
-              <span>Inputs</span>
-              <strong>{content.meta.sourceCount}</strong>
-            </div>
-          ) : null}
-          {content.desks.length ? (
-            <div>
-              <span>Desks</span>
-              <strong>{content.desks.length}</strong>
-            </div>
-          ) : null}
-        </div>
-      </header>
+    <div className="signal-room">
+      <section className="signal-room__command">
+        <article className="signal-room__call">
+          <p className="signal-room__kicker">The call</p>
+          <h1><MarkdownText>{shorten(call, 245)}</MarkdownText></h1>
+          {callSupport ? <p className="signal-room__call-support"><MarkdownText>{shorten(callSupport, 220)}</MarkdownText></p> : null}
+          <footer>
+            <span>Primary view <strong>House view</strong></span>
+            <span>Last updated <strong>{updatedLabel}</strong></span>
+            <span>Confidence <strong>{extractConfidence(content.baseCase)}</strong></span>
+          </footer>
+        </article>
 
-      <SnapshotStrip snapshot={content.snapshot} fallback={content.agreement} />
+        <aside className="signal-room__revision">
+          <div><p className="signal-room__kicker">Since last update</p><time>{updatedLabel}</time></div>
+          <ChangeItem label="What changed" text={changed[0]} />
+          <ChangeItem label="What held" text={held[0]} />
+          <ChangeItem label="Why it matters" text={changed[1] || content.snapshot?.bullets?.[2]} />
+          {!changed.length && !held.length ? <p className="signal-room__empty">Revision notes will appear after the next synthesis.</p> : null}
+        </aside>
 
-      <div className="macro-dash__topology">
-        <BaseCasePanel baseCase={content.baseCase} regime={content.regime} />
-        <CompactPanel
-          title="What to watch"
-          kicker="Watchlist"
-          items={content.watchlist?.bullets}
-          variant="watch"
-        />
+        <NextTests items={content.watchlist?.bullets} />
+      </section>
+
+      <RegimeTape themes={content.themes} regime={content.regime} />
+
+      <div className="signal-room__analysis-grid">
+        <DriverChain themes={content.themes} />
+        <SourceAlignment desks={content.desks} disagreement={content.disagreement} />
       </div>
 
-      <ThemeGrid themes={content.themes} />
-
-      <div className="macro-dash__synthesis">
-        <CompactPanel
-          title="Consensus"
-          kicker="Agreement"
-          items={content.agreement?.bullets}
-          variant="agree"
-        />
-        <CompactPanel
-          title="Tensions"
-          kicker="Disagreement"
-          items={content.disagreement?.bullets}
-          variant="disagree"
-        />
-        <CompactPanel
-          title="Latest shifts"
-          kicker="What changed"
-          items={content.whatChanged?.bullets}
-          variant="change"
-        />
-      </div>
-
-      {content.regime?.bullets?.length ? (
-        <section className="macro-dash__regime">
-          <p className="macro-dash__section-kicker">Regime tape</p>
-          <BulletList items={content.regime.bullets} />
-        </section>
-      ) : null}
-
-      {content.desks.length ? (
-        <section className="macro-dash__desks">
-          <div className="macro-dash__section-head">
-            <div>
-              <p className="macro-dash__section-kicker">Source desks</p>
-              <h2>What each source is saying</h2>
-            </div>
-          </div>
-          <div className="macro-dash__desk-grid">
-            {content.desks.map((desk) => (
-              <DeskCard key={desk.name} desk={desk} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <footer className="signal-room__engine">
+        <strong>Synthesis engine</strong>
+        <span>Continuously maintaining the house view from {content.meta.sourceCount || content.desks.length} inputs</span>
+        <Link href="/macro/inputs">Open all signals →</Link>
+      </footer>
     </div>
   );
 }

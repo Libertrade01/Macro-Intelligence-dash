@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const NAV = [
-  { href: "/macro", label: "Overview" },
-  { href: "/macro/inputs", label: "Inputs" },
+  { href: "/macro", label: "Today" },
+  { href: "/macro/inputs", label: "Signals" },
 ];
 
 function isNavActive(pathname, href) {
@@ -22,32 +23,53 @@ function isNavActive(pathname, href) {
 
 export default function AppShell({ children }) {
   const pathname = usePathname();
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("signal-room-theme");
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const nextTheme = saved || preferred;
+    document.documentElement.dataset.theme = nextTheme;
+    setTheme(nextTheme);
+  }, []);
+
+  function toggleTheme() {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = nextTheme;
+    window.localStorage.setItem("signal-room-theme", nextTheme);
+    setTheme(nextTheme);
+  }
 
   return (
     <div className="studio-shell">
-      <aside className="studio-sidebar">
-        <div className="studio-wordmark">
-          <span>Libertrade</span>
-          Macro Intelligence
-        </div>
+      <header className="studio-topbar">
+        <Link href="/macro" className="studio-wordmark" aria-label="Macro Signal Room home">
+          <span className="studio-wordmark__signal" aria-hidden="true" />
+          <strong>Macro Signal Room</strong>
+        </Link>
 
-        <div className="studio-nav-groups">
-          <div className="studio-nav-section">
-            <p className="studio-nav-label">Desk</p>
-            <div className="studio-nav">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={isNavActive(pathname, item.href) ? "active" : undefined}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+        <nav className="studio-nav" aria-label="Primary navigation">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={isNavActive(pathname, item.href) ? "active" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="studio-actions">
+          <div className="studio-live" aria-label="Synthesis engine active">
+            <span aria-hidden="true" />
+            Live synthesis
           </div>
+          <button type="button" className="studio-theme" onClick={toggleTheme} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}>
+            Theme <strong>{theme}</strong>
+          </button>
         </div>
-      </aside>
+      </header>
       <main className="studio-main">{children}</main>
     </div>
   );

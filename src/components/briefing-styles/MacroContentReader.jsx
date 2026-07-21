@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Link from "next/link";
 import EpisodeReadToggle from "../EpisodeReadToggle";
 import {
   estimateReadTime,
@@ -36,6 +37,9 @@ export default function MacroContentReader({ briefing }) {
   return (
     <div className="studio-content macro-content">
       <article className="briefing-article">
+        <Link href="/macro/inputs" className="reader-back-link">
+          <span aria-hidden="true">←</span> Back to signals
+        </Link>
         <header className="briefing-header">
           <div className="macro-content__meta">
             <p className="eyebrow">{sectionEyebrow(briefing.type)}</p>

@@ -5,7 +5,7 @@ import { isSupabaseConfigured } from "../../lib/supabase";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Overview — Macro Intelligence",
+  title: "Today — Macro Signal Room",
 };
 
 export default async function MacroOverviewPage() {

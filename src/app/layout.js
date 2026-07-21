@@ -2,9 +2,12 @@ import "./globals.css";
 import AppShell from "../components/AppShell";
 
 export const metadata = {
-  title: "Macro Intelligence",
-  description: "Living macro overview, podcast inputs, and newsletter speedruns",
-  themeColor: "#111217",
+  title: "Macro Signal Room",
+  description: "A living macro view built from the sources you trust",
+};
+
+export const viewport = {
+  themeColor: "#f1efe7",
 };
 
 export default function RootLayout({ children }) {
