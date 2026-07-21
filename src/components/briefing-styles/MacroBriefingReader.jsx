@@ -187,7 +187,7 @@ function V2MacroBriefingReader({ content }) {
         <aside className="signal-room__revision">
           <div><p className="signal-room__kicker">Since last update</p><time>{updatedLabel}</time></div>
           <ChangeItem label="What changed" text={content.revision.changed} />
-          <ChangeItem label="What held" text={content.revision.unchanged} />
+          <ChangeItem label="What held" text={content.revision.held || content.revision.unchanged} />
           <ChangeItem label="Why it matters" text={content.revision.impact} />
           <EvidenceList evidence={content.revision.evidence} />
         </aside>
@@ -217,7 +217,7 @@ function V2MacroBriefingReader({ content }) {
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <h3>{driver.name}</h3>
                 <p>{driver.summary}</p>
-                <p>{driver.causes_next}</p>
+                <p>{driver.transmission || driver.causes_next}</p>
                 <EvidenceList evidence={driver.evidence} />
               </article>
               {index < content.drivers.length - 1 ? <i aria-hidden="true">→</i> : null}

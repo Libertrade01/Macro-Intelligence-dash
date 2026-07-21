@@ -22,7 +22,7 @@ from typing import Any
 
 ENV_PATH = Path.home() / ".hermes" / ".env"
 DEFAULT_BASE_URL = "https://macro-intelligence-dash.vercel.app"
-PROMPT_VERSION = "macro-signal-room-v2"
+PROMPT_VERSION = "macro-signal-room-v2.1-room-view-contract"
 MODEL_PROVIDER = os.getenv("MACRO_SIGNAL_PROVIDER", "openai-codex")
 MODEL_NAME = os.getenv("MACRO_SIGNAL_MODEL", "gpt-5.4")
 
@@ -156,26 +156,31 @@ Return this top-level dry-run object:
   "regime_changes": [],
   "current_v2_payload": {{
     "schema_version": 2,
+    "prompt_version": "macro-signal-room-v2.1-room-view-contract",
     "generated_at": "ISO timestamp",
     "through_date": "YYYY-MM-DD",
     "input_count": number,
     "source_count": number,
-    "call": {{"headline":"max 85 chars", "thesis":"max 300 chars", "horizon":"1–4 weeks", "confidence":"low | medium | high", "primary_view":"", "bias":"", "invalidation":""}},
-    "revision": {{"changed":"max 180 chars", "unchanged":"max 180 chars", "impact":"max 180 chars", "material_change": true, "evidence":[]}},
+    "sources": ["1000x Network", "Forward Guidance", "Capital Flows Research", "Friday Speedrun"],
+    "room_view": {{"headline":"max 80 chars", "thesis":"max 280 chars", "primary_view":"max 45 chars", "horizon":"1–4 weeks", "confidence":"low | medium | high", "bias":"max 150 chars", "invalidation":"max 170 chars"}},
+    "revision": {{"changed":"max 180 chars", "held":"max 180 chars", "impact":"max 180 chars", "material_change": true, "trigger_slugs":[], "evidence":[]}},
     "next_tests": [],
-    "regime": {{"label":"", "description":"", "since":"YYYY-MM-DD or null", "previous_label":"Prior regime or null", "changed":false, "change_reason":null}},
+    "regime": {{"label":"max 75 chars", "definition":"max 190 chars", "bias":"max 140 chars", "invalidation":"max 160 chars", "since":"ISO timestamp or null", "previous_label":"Prior regime or null", "changed":false, "change_reason":null}},
     "drivers": [],
     "source_alignment": []
   }},
   "schema_and_persistence_needed_before_write": []
 }}
 
-V2 constraints:
+V2.1 Room View constraints:
+- Never use "House View", "house view", or "house-view" anywhere.
+- input_count is usable inputs. source_count is distinct source names, normally 4.
 - drivers exactly 4, ordered causal nodes chosen from Growth, Inflation, Policy, Rates, Liquidity, USD, Credit, Positioning, Risk.
-- driver summary max 160 chars, signal max 30 chars.
-- next_tests max 4, description max 120 chars.
-- source stance max 140 chars.
-- source_alignment positions keys: growth, policy, liquidity, risk with aligned | mixed | not_aligned | no_view.
+- Each driver has id, name, state max 35 chars, direction, summary max 170 chars, transmission max 150 chars, causes_next, evidence max 3.
+- causes_next must reference the next driver id. The fourth causes_next must be null.
+- next_tests exactly 3 or 4; title max 65, description max 130, window max 20, confirmation max 140, invalidation max 140.
+- source_alignment positions keys must exactly match the active driver ids with aligned | mixed | not_aligned | no_view.
+- source stance max 150 chars. evidence max 3 per source.
 
 EVIDENCE_JSON:
 {json.dumps(evidence, ensure_ascii=False)}
@@ -230,54 +235,78 @@ def validate_report(report: dict[str, Any], fetched_count: int) -> list[str]:
     if report.get("total_inputs_found") != fetched_count:
         issues.append(f"total_inputs_found={report.get('total_inputs_found')} but fetched={fetched_count}")
     payload = report.get("current_v2_payload") or {}
-    call = payload.get("call") or {}
+    room_view = payload.get("room_view") or payload.get("call") or {}
+    revision = payload.get("revision") or {}
     if payload.get("schema_version") != 2:
         issues.append("current_v2_payload.schema_version must be 2")
-    if len(call.get("headline", "")) > 85:
-        issues.append("call.headline exceeds 85 chars")
-    if len(call.get("thesis", "")) > 300:
-        issues.append("call.thesis exceeds 300 chars")
+    if re.search(r"house[- ]view|house macro", json.dumps(report), re.I):
+        issues.append("House View terminology is not allowed")
+    if payload.get("source_count") == payload.get("input_count"):
+        issues.append("source_count and input_count are conflated")
+    if not payload.get("sources"):
+        issues.append("sources is required")
+    if len(room_view.get("headline", "")) > 80:
+        issues.append("room_view.headline exceeds 80 chars")
+    if len(room_view.get("thesis", "")) > 280:
+        issues.append("room_view.thesis exceeds 280 chars")
+    if len(room_view.get("primary_view", "")) > 45:
+        issues.append("room_view.primary_view exceeds 45 chars")
+    if len(room_view.get("bias", "")) > 150:
+        issues.append("room_view.bias exceeds 150 chars")
+    if len(room_view.get("invalidation", "")) > 170:
+        issues.append("room_view.invalidation exceeds 170 chars")
+    if not revision.get("held") and not revision.get("unchanged"):
+        issues.append("revision.held is required")
     drivers = payload.get("drivers") or []
     if len(drivers) != 4:
         issues.append("drivers must contain exactly 4 nodes")
     for driver in drivers:
-        if len(driver.get("summary", "")) > 160:
+        if len(driver.get("state", "")) > 35:
+            issues.append(f"driver state too long: {driver.get('name')}")
+        if len(driver.get("summary", "")) > 170:
             issues.append(f"driver summary too long: {driver.get('name')}")
-        if len(driver.get("signal", "")) > 30:
-            issues.append(f"driver signal too long: {driver.get('name')}")
+        if not driver.get("transmission"):
+            issues.append(f"driver transmission missing: {driver.get('name')}")
+    driver_ids = [driver.get("id") for driver in drivers]
+    for index, driver in enumerate(drivers):
+        expected_next = driver_ids[index + 1] if index < len(driver_ids) - 1 else None
+        if driver.get("causes_next") != expected_next:
+            issues.append(f"driver causes_next invalid: {driver.get('name')}")
     for source in payload.get("source_alignment") or []:
-        if len(source.get("stance", "")) > 140:
+        if set((source.get("positions") or {}).keys()) != set(driver_ids):
+            issues.append(f"source alignment keys do not match drivers: {source.get('source')}")
+        if len(source.get("stance", "")) > 150:
             issues.append(f"source stance too long: {source.get('source')}")
     return issues
 
 
 def markdown_from_v2(payload: dict[str, Any]) -> str:
-    call = payload.get("call") or {}
+    room_view = payload.get("room_view") or payload.get("call") or {}
     revision = payload.get("revision") or {}
     regime = payload.get("regime") or {}
     lines = [
         "## Room View",
         "",
-        f"- **Headline:** {call.get('headline', '')}",
-        f"- **Thesis:** {call.get('thesis', '')}",
-        f"- **Bias:** {call.get('bias', '')}",
-        f"- **Invalidation:** {call.get('invalidation', '')}",
+        f"- **Headline:** {room_view.get('headline', '')}",
+        f"- **Thesis:** {room_view.get('thesis', '')}",
+        f"- **Bias:** {room_view.get('bias', '')}",
+        f"- **Invalidation:** {room_view.get('invalidation', '')}",
         "",
         "## What Changed",
         "",
         f"- {revision.get('changed', '')}",
-        f"- **Unchanged:** {revision.get('unchanged', '')}",
+        f"- **Held:** {revision.get('held') or revision.get('unchanged', '')}",
         f"- **Impact:** {revision.get('impact', '')}",
         "",
         "## Regime",
         "",
-        f"- **{regime.get('label', '')}:** {regime.get('description', '')}",
+        f"- **{regime.get('label', '')}:** {regime.get('definition') or regime.get('description', '')}",
         "",
         "## Drivers",
         "",
     ]
     for driver in payload.get("drivers") or []:
-        lines.append(f"- **{driver.get('name')}:** {driver.get('summary')} Transmission: {driver.get('causes_next', '')}")
+        lines.append(f"- **{driver.get('name')}:** {driver.get('summary')} Transmission: {driver.get('transmission') or driver.get('causes_next', '')}")
     return "\n".join(lines).strip()
 
 
@@ -289,8 +318,8 @@ def persist_report(report: dict[str, Any], base_url: str, secret: str) -> None:
         "title": "Macro Signal Room",
         "date": payload["through_date"],
         "status": "ready",
-        "source_count": payload.get("input_count"),
-        "top_story": (payload.get("call") or {}).get("headline"),
+        "source_count": payload.get("source_count"),
+        "top_story": (payload.get("room_view") or payload.get("call") or {}).get("headline"),
         "content_markdown": markdown_from_v2(payload),
         "content_json": payload,
         "prompt_version": PROMPT_VERSION,

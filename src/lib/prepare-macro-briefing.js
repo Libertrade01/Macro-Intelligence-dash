@@ -109,6 +109,8 @@ function collectEvidenceSlugs(payload) {
 
 function prepareV2MacroBriefing(briefing) {
   const payload = briefing.content_json;
+  const roomView = payload?.room_view || payload?.call || {};
+  const revision = payload?.revision || {};
   return {
     v2: true,
     payload,
@@ -120,8 +122,13 @@ function prepareV2MacroBriefing(briefing) {
       sourceCount: payload?.input_count || briefing.source_count,
       sources: briefing.sources || [],
     },
-    call: payload?.call || {},
-    revision: payload?.revision || {},
+    call: roomView,
+    roomView,
+    revision: {
+      ...revision,
+      unchanged: revision.unchanged || revision.held,
+      held: revision.held || revision.unchanged,
+    },
     regime: payload?.regime || {},
     drivers: payload?.drivers || [],
     nextTests: payload?.next_tests || [],
