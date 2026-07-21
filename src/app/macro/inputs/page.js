@@ -21,7 +21,7 @@ export default async function MacroInputsPage() {
           <p className="eyebrow">Intelligence intake</p>
           <h1 className="page-title">Signals</h1>
           <p className="signals-page__intro">
-            New episodes, extracted arguments, and the evidence feeding the house view.
+            New episodes, extracted arguments, and the evidence feeding the room view.
           </p>
         </div>
         <div className="signals-page__count">

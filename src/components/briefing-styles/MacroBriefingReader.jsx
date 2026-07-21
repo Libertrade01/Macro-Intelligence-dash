@@ -114,7 +114,7 @@ function DriverChain({ themes }) {
         ))}
       </div>
       <p className="signal-room__chain-caption">
-        The house view is a chain of claims. Each link can be traced back to the source desks below.
+        The room view is a chain of claims. Each link can be traced back to the source desks below.
       </p>
     </section>
   );
@@ -178,7 +178,7 @@ function V2MacroBriefingReader({ content }) {
           <h1>{content.call.headline || content.meta.title}</h1>
           <p className="signal-room__call-support">{content.call.thesis}</p>
           <footer>
-            <span>Primary view <strong>{content.call.primary_view || "House view"}</strong></span>
+            <span>Primary view <strong>{content.call.primary_view || "Room view"}</strong></span>
             <span>Last updated <strong>{updatedLabel}</strong></span>
             <span>Confidence <strong>{content.call.confidence || "unknown"}</strong></span>
           </footer>
@@ -243,7 +243,7 @@ function V2MacroBriefingReader({ content }) {
 
       <footer className="signal-room__engine">
         <strong>Synthesis engine V2</strong>
-        <span>Maintaining the house view from {content.meta.sourceCount || 0} inputs</span>
+        <span>Maintaining the room view from {content.meta.sourceCount || 0} inputs</span>
         <Link href="/macro/revisions">Open revisions →</Link>
       </footer>
     </div>
@@ -259,7 +259,7 @@ export default function MacroBriefingReader({ briefing }) {
   const call = content.baseCase?.paragraphs?.[0]
     || content.snapshot?.bullets?.[0]
     || content.regime?.bullets?.[0]
-    || "The house view is still forming as new signals arrive.";
+    || "The room view is still forming as new signals arrive.";
   const callSupport = content.baseCase?.bullets?.find((item) => !/^confidence:|^bias:|^invalidation:/i.test(item.replace(/\*\*/g, "")))
     || content.snapshot?.bullets?.[1];
   const changed = content.whatChanged?.bullets || [];
@@ -273,7 +273,7 @@ export default function MacroBriefingReader({ briefing }) {
           <h1><MarkdownText>{shorten(call, 245)}</MarkdownText></h1>
           {callSupport ? <p className="signal-room__call-support"><MarkdownText>{shorten(callSupport, 220)}</MarkdownText></p> : null}
           <footer>
-            <span>Primary view <strong>House view</strong></span>
+            <span>Primary view <strong>Room view</strong></span>
             <span>Last updated <strong>{updatedLabel}</strong></span>
             <span>Confidence <strong>{extractConfidence(content.baseCase)}</strong></span>
           </footer>
@@ -299,7 +299,7 @@ export default function MacroBriefingReader({ briefing }) {
 
       <footer className="signal-room__engine">
         <strong>Synthesis engine</strong>
-        <span>Continuously maintaining the house view from {content.meta.sourceCount || content.desks.length} inputs</span>
+        <span>Continuously maintaining the room view from {content.meta.sourceCount || content.desks.length} inputs</span>
         <Link href="/macro/inputs">Open all signals →</Link>
       </footer>
     </div>

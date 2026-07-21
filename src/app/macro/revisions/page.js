@@ -20,7 +20,7 @@ function RevisionCard({ revision }) {
         <span>V{revision.version}</span>
         <time>{formatDate(revision.effective_at)}</time>
       </header>
-      <h2>{call.headline || revision.change_summary || "House view revision"}</h2>
+      <h2>{call.headline || revision.change_summary || "Room view revision"}</h2>
       {call.thesis ? <p>{call.thesis}</p> : null}
       {revision.change_summary ? <p><strong>Change:</strong> {revision.change_summary}</p> : null}
       {regime.label ? <p><strong>Regime:</strong> {regime.label}</p> : null}
@@ -54,8 +54,8 @@ export default async function MacroRevisionsPage() {
       <header className="signals-page__header">
         <div>
           <p className="eyebrow">Macro Signal Room</p>
-          <h1 className="page-title">House-view revisions</h1>
-          <p className="signals-page__intro">Meaningful changes in the house macro view, not an episode activity log.</p>
+          <h1 className="page-title">Room-view revisions</h1>
+          <p className="signals-page__intro">Meaningful changes in the room macro view, not an episode activity log.</p>
         </div>
         <div className="signals-page__count">
           <span>History</span>

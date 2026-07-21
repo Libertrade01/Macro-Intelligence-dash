@@ -2,7 +2,7 @@
 
 ## Product premise
 
-Macro Intelligence is not a podcast archive. It is a continuously updated house view built from a small set of trusted macro voices.
+Macro Intelligence is not a podcast archive. It is a continuously updated room view built from a small set of trusted macro voices.
 
 The product has two jobs:
 
@@ -11,7 +11,7 @@ The product has two jobs:
 
 The core loop should be visible in the product:
 
-**New episode → extracted signals → changed beliefs → current house view**
+**New episode → extracted signals → changed beliefs → current room view**
 
 ### Positioning
 
@@ -41,13 +41,13 @@ All three directions use a new top-level structure:
 - **Today** — the current macro view
 - **Signals** — episode and newsletter intake
 - **Sources** — persistent views of each show and how its stance has evolved
-- **History** — prior house views and the change log
+- **History** — prior room views and the change log
 
 “Overview” becomes **Today** and “Inputs” becomes **Signals**. The original terms can remain as small explanatory labels during transition.
 
 ### Shared overview hierarchy
 
-1. **The call** — one short house-view statement, horizon, regime, and confidence
+1. **The call** — one short room-view statement, horizon, regime, and confidence
 2. **What changed** — deltas caused by the newest inputs
 3. **Causal picture** — the relationships between growth, inflation, policy, liquidity, and assets
 4. **Next tests** — upcoming catalysts and explicit invalidation conditions
@@ -61,7 +61,7 @@ Every episode should expose, without opening it:
 - episode title and a two-line “why it matters” deck
 - 2–3 topic labels
 - stance: supports / challenges / adds context
-- impact on the house view: high / medium / background
+- impact on the room view: high / medium / background
 - state: new / reviewed / incorporated
 
 The first release can use title, show, date, read state, and `top_story`. Topic, stance, impact, and incorporation state require structured metadata from ingestion.
@@ -147,7 +147,7 @@ An episode card includes **View impact**. Opening it highlights the exact senten
 
 ### Idea
 
-An intelligence publication that rewrites itself. It treats the house view as the front page and each source as a correspondent. This is the most premium and editorial direction.
+An intelligence publication that rewrites itself. It treats the room view as the front page and each source as a correspondent. This is the most premium and editorial direction.
 
 ### Brand character
 
@@ -256,7 +256,7 @@ A compact floating command bar sits at the bottom or top centre. `Today`, `Signa
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-The map is not decorative. Clicking “Liquidity” filters the evidence ribbon, shows agreement and dissent, and explains which inputs last changed that node. A compact prose “house view” remains available so insight never depends on interpreting a diagram.
+The map is not decorative. Clicking “Liquidity” filters the evidence ribbon, shows agreement and dissent, and explains which inputs last changed that node. A compact prose “room view” remains available so insight never depends on interpreting a diagram.
 
 ### Signals layout
 
@@ -336,7 +336,7 @@ Add structured fields during ingestion:
 - No 44px archive rows for new or important signals.
 - Body text stays near 60–70 characters per line.
 - Use sentence case for navigation and section headings.
-- Every change in the house view should eventually be traceable to evidence.
+- Every change in the room view should eventually be traceable to evidence.
 - Animation supports state change; it never impersonates market activity.
 - Mobile collapses into a clear narrative, not a miniature dashboard.
 

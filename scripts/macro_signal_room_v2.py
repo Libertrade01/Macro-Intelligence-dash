@@ -256,7 +256,7 @@ def markdown_from_v2(payload: dict[str, Any]) -> str:
     revision = payload.get("revision") or {}
     regime = payload.get("regime") or {}
     lines = [
-        "## House View",
+        "## Room View",
         "",
         f"- **Headline:** {call.get('headline', '')}",
         f"- **Thesis:** {call.get('thesis', '')}",
