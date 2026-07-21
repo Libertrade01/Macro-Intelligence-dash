@@ -44,7 +44,13 @@ export default function AppShell({ children }) {
     <div className="studio-shell">
       <header className="studio-topbar">
         <Link href="/macro" className="studio-wordmark" aria-label="Macro Signal Room home">
-          <span className="studio-wordmark__signal" aria-hidden="true" />
+          <span className="studio-wordmark__signal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+              <rect x="3" y="14" width="3.5" height="7" rx="0.75" fill="currentColor" opacity="0.45" />
+              <rect x="10" y="9" width="3.5" height="12" rx="0.75" fill="currentColor" opacity="0.75" />
+              <rect x="17" y="3" width="3.5" height="18" rx="0.75" fill="var(--brand)" />
+            </svg>
+          </span>
           <strong>Macro Signal Room</strong>
         </Link>
 

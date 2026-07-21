@@ -121,13 +121,16 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .studio-wordmark__signal {
   width: 28px;
   height: 28px;
-  border: 1px solid var(--ink);
-  border-radius: 50%;
-  background:
-    linear-gradient(var(--ink), var(--ink)) center / 1px 100% no-repeat,
-    linear-gradient(90deg, var(--ink), var(--ink)) center / 100% 1px no-repeat,
-    radial-gradient(circle, var(--brand) 0 2px, transparent 3px);
-  transform: rotate(22.5deg);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+}
+
+.studio-wordmark__signal svg {
+  display: block;
+  overflow: visible;
 }
 
 .studio-nav { align-self: stretch; display: flex; align-items: stretch; gap: 34px; }
