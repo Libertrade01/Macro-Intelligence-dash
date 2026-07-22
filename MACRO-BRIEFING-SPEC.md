@@ -1,8 +1,10 @@
 # Macro Briefing Spec
 
+> **Current contract (V2):** the living Room View is stored in `content_json` (`schema_version: 2`) with `room_view`, `next_tests`, `regime`, `drivers`, and `source_alignment`. See `scripts/macro_signal_room_v2.py`. The markdown sections below remain the **legacy** display/ingest fallback when `content_json` is absent.
+
 Living macro view - layer 2. One row in `briefings` with `type: macro_briefing` and slug `macro-living`. Hermes updates this row in place after each podcast episode, newsletter edition, or manual refresh.
 
-The Studio side owns the display contract. Hermes owns synthesis.
+The app owns the display contract. Hermes owns synthesis.
 
 ## Ingest Payload
 

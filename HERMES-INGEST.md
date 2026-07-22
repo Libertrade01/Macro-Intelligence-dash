@@ -1,11 +1,13 @@
-# Hermes → Briefing Studio ingest
+# Hermes → Macro Signal Room ingest
 
-Briefing Studio is the **only** destination for finished content. Hermes POSTs here after synthesis — no Notion mirror.
+Macro Signal Room is the destination for finished macro content. Hermes POSTs here after synthesis. No Notion mirror.
+
+AI daily briefings belong in [AI Daily Pulse](https://github.com/Libertrade01/AI-Daily-Pulse), not this app.
 
 ## Endpoint
 
 ```
-POST https://your-briefing-studio.vercel.app/api/briefings
+POST https://your-macro-app.vercel.app/api/briefings
 Authorization: Bearer $BRIEFING_INGEST_SECRET
 Content-Type: application/json
 ```
@@ -13,7 +15,7 @@ Content-Type: application/json
 ## Example (curl)
 
 ```bash
-curl -X POST "https://your-app.vercel.app/api/briefings" \
+curl -X POST "https://your-macro-app.vercel.app/api/briefings" \
   -H "Authorization: Bearer $BRIEFING_INGEST_SECRET" \
   -H "Content-Type: application/json" \
   -d @briefing.json
@@ -25,9 +27,9 @@ curl -X POST "https://your-app.vercel.app/api/briefings" \
 import os
 import requests
 
-def publish_to_briefing_studio(payload: dict) -> dict:
+def publish_to_macro_signal_room(payload: dict) -> dict:
     response = requests.post(
-        os.environ["BRIEFING_STUDIO_URL"].rstrip("/") + "/api/briefings",
+        os.environ["MACRO_SIGNAL_ROOM_URL"].rstrip("/") + "/api/briefings",
         headers={
             "Authorization": f"Bearer {os.environ['BRIEFING_INGEST_SECRET']}",
             "Content-Type": "application/json",
@@ -42,26 +44,22 @@ def publish_to_briefing_studio(payload: dict) -> dict:
 ## VPS environment variables
 
 ```
-BRIEFING_STUDIO_URL=https://your-app.vercel.app
+MACRO_SIGNAL_ROOM_URL=https://your-macro-app.vercel.app
 BRIEFING_INGEST_SECRET=same-value-as-vercel-env
 ```
 
-X credentials (`AUTH_TOKEN`, `CT0`) and Supadata keys stay on the VPS only — not in Briefing Studio.
+Source credentials and transcript-provider keys stay on the VPS only. Not in this app.
 
 ## Ingest order
-
-### AI daily brief
-
-Hermes cron → synthesize → `POST` `ai_briefing` → read at `/`
 
 ### Podcast episodes
 
 See `HERMES-PODCAST-WORKFLOW.md`. On each new episode from the channel list:
 
-1. Fetch transcript (Supadata)
+1. Fetch transcript
 2. Summarize
 3. `POST` `podcast_summary`
-4. Regenerate and `POST` `macro_briefing` (`macro-living`)
+4. Regenerate and `POST` `macro_briefing` (`macro-living`), or run the V2 worker
 
 No approval gate. Title filters only.
 
@@ -73,7 +71,6 @@ See `HERMES-FRIDAY-SPEEDRUN-WORKFLOW.md`. Spectra library → article fetch → 
 
 | type | Spec | App route |
 |------|------|-----------|
-| `ai_briefing` | `AI-BRIEFING-SPEC.md` | `/` |
 | `podcast_summary` | `PODCAST-SUMMARY-SPEC.md` | `/macro/inputs/{slug}` |
 | `newsletter_summary` | `NEWSLETTER-SUMMARY-SPEC.md` | `/macro/inputs/{slug}` |
 | `macro_briefing` | `MACRO-BRIEFING-SPEC.md` | `/macro` |
